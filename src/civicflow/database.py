@@ -83,8 +83,10 @@ CREATE TABLE IF NOT EXISTS outbox_messages (
     lease_until TEXT,
     attempts INTEGER NOT NULL DEFAULT 0,
     status TEXT NOT NULL,
-    delivered_at TEXT
+    delivered_at TEXT,
+    dedupe_key TEXT
 );
+CREATE UNIQUE INDEX IF NOT EXISTS outbox_dedupe ON outbox_messages(dedupe_key) WHERE dedupe_key IS NOT NULL;
 CREATE INDEX IF NOT EXISTS outbox_ready ON outbox_messages(status, available_at, lease_until);
 CREATE TABLE IF NOT EXISTS journal_entries (
     entry_id TEXT PRIMARY KEY,
@@ -124,6 +126,48 @@ CREATE TABLE IF NOT EXISTS scheduled_jobs (
     last_error TEXT NOT NULL DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS jobs_due ON scheduled_jobs(status, run_at, lease_until);
+CREATE TABLE IF NOT EXISTS tour_fulfillment (
+    booking_id TEXT NOT NULL,
+    service_id TEXT NOT NULL,
+    batch_version INTEGER NOT NULL,
+    status TEXT NOT NULL,
+    reservation_id TEXT,
+    replaced_by_option_id TEXT,
+    settlement_id TEXT,
+    consumed_at TEXT,
+    reason TEXT NOT NULL DEFAULT '',
+    updated_at TEXT NOT NULL,
+    updated_by TEXT NOT NULL,
+    version INTEGER NOT NULL,
+    PRIMARY KEY(booking_id, service_id)
+);
+CREATE INDEX IF NOT EXISTS tour_fulfillment_status ON tour_fulfillment(status, service_id);
+CREATE TABLE IF NOT EXISTS tour_settlement_items (
+    settlement_id TEXT NOT NULL,
+    recovery_id TEXT NOT NULL,
+    booking_id TEXT NOT NULL,
+    service_id TEXT NOT NULL,
+    responsible_party TEXT NOT NULL,
+    affected_value_minor INTEGER NOT NULL,
+    replacement_value_minor INTEGER NOT NULL DEFAULT 0,
+    refund_minor INTEGER NOT NULL DEFAULT 0,
+    surcharge_minor INTEGER NOT NULL DEFAULT 0,
+    voucher_minor INTEGER NOT NULL DEFAULT 0,
+    reason TEXT NOT NULL DEFAULT '',
+    entry_ids_json TEXT NOT NULL DEFAULT '[]',
+    PRIMARY KEY(settlement_id, service_id)
+);
+CREATE INDEX IF NOT EXISTS tour_settlement_affected ON tour_settlement_items(recovery_id, booking_id, service_id);
+CREATE TABLE IF NOT EXISTS tour_receipts (
+    receipt_key TEXT PRIMARY KEY,
+    source TEXT NOT NULL,
+    source_key TEXT NOT NULL,
+    sequence INTEGER NOT NULL,
+    reported_status TEXT NOT NULL,
+    status TEXT NOT NULL,
+    detail_json TEXT NOT NULL,
+    received_at TEXT NOT NULL
+);
 """
 
 

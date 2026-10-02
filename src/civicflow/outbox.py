@@ -17,10 +17,14 @@ class Outbox:
     database: Database
     clock: Clock
 
-    def enqueue(self, *, topic: str, aggregate_id: str, payload: dict, available_at: str | None = None) -> str:
+    def enqueue(self, *, topic: str, aggregate_id: str, payload: dict, available_at: str | None = None, dedupe_key: str | None = None) -> str:
         message_id = new_id("msg"); available_at = available_at or self.clock.now()
         with self.database.transaction() as connection:
-            connection.execute("INSERT INTO outbox_messages(message_id,topic,aggregate_id,payload_json,available_at,status) VALUES(?,?,?,?,?,?)", (message_id, topic, aggregate_id, canonical_json(payload), available_at, "pending"))
+            if dedupe_key is not None:
+                existing = connection.execute("SELECT message_id FROM outbox_messages WHERE dedupe_key=?", (dedupe_key,)).fetchone()
+                if existing:
+                    return str(existing["message_id"])
+            connection.execute("INSERT INTO outbox_messages(message_id,topic,aggregate_id,payload_json,available_at,status,dedupe_key) VALUES(?,?,?,?,?,?,?)", (message_id, topic, aggregate_id, canonical_json(payload), available_at, "pending", dedupe_key))
         return message_id
 
     def lease(self, *, owner: str, seconds: int = 30, limit: int = 20) -> list[dict]:

@@ -37,3 +37,12 @@ PYTHONPATH=src python3 -m civicflow.cli --db /tmp/civicflow-demo.sqlite3 demo
 ```bash
 PYTHONPATH=src python3 -m civicflow.cli --db /tmp/civicflow-demo.sqlite3 list-cases
 ```
+
+旅游线路版本与服务恢复：
+
+```bash
+PYTHONPATH=src python3 -m civicflow.cli --db /tmp/civicflow-demo.sqlite3 tour-demo
+```
+
+- `tours.py`：出发批次目录（逐日行程、交通住宿与活动供应、容量、价格构成、签证入境条件、导游资质、特殊需求、允许替代范围）与游客订单；游客确认后冻结实际购买版本并占座。
+- `recovery.py`：供应商退出、容量缩减、目的地风险或航班变化只处理尚未履行的环节，已使用服务保留原责任；替代方案逐项比较时间、价值与无障碍条件，补差/退款/代金与被影响项目一一对应并登记不可变分录；高额补偿必须另一人复核（四眼）；供应商状态回执重复不触发第二次退款，矛盾消息挂起待核；供应商只见本方任务；临近出发提醒、替代确认超时与退款对账经持久化任务队列在重启后自动续接。游客可查看变更原因与权益计算（`tourist_view`），运营可据 `operator_queue` 确定下一责任方。
