@@ -1,0 +1,20 @@
+{
+  "name": "application-itinerary",
+  "version": "1.0.0",
+  "description": "面向每位游客的线路版本与服务恢复应用（构建于协同事务平台能力之上）",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "start": "node --no-warnings dist/web/server.js",
+    "test": "tsc -p tsconfig.test.json && node --no-warnings --test dist-test/tests/*.test.js",
+    "build:test": "tsc -p tsconfig.test.json"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "^5.9.3"
+  }
+}

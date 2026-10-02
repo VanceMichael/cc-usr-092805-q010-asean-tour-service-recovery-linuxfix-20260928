@@ -37,3 +37,19 @@ PYTHONPATH=src python3 -m civicflow.cli --db /tmp/civicflow-demo.sqlite3 demo
 ```bash
 PYTHONPATH=src python3 -m civicflow.cli --db /tmp/civicflow-demo.sqlite3 list-cases
 ```
+
+## 线路版本与服务恢复应用
+
+在现有协同平台能力（机构、版本化实体、预约、审批、不可变资金分录、通知、
+可恢复任务）之上构建的旅游履约应用位于 [`application-itinerary/`](application-itinerary/README.md)：
+面向每位游客冻结实际购买的线路版本，航班改期/供应商退出/容量缩减/目的地风险
+只处理未履行环节，替代同时比较时间、价值与无障碍，补差退款代金逐环节守恒，
+高额补偿双人审核，供应商只见本方任务，重复回执不二次退款，矛盾消息先挂起核对，
+临近出发、待确认替代与退款对账在应用重启后自动续接。
+
+```bash
+cd application-itinerary
+npm install && npm run build && npm test
+ITINERARY_DB=/tmp/itinerary.sqlite3 PORT=8080 npm start
+```
+
